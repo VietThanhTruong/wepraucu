@@ -4,6 +4,9 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 import time
+import mysql.connector
+from mysql.connector import Error
+from mysql.connector import errorcode
 
 # Cấu hình options để chạy trình duyệt không cần GUI
 options = Options()
@@ -11,6 +14,11 @@ options = Options()
 
 # Tạo một instance của ChromeDriver
 driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+
+connection = mysql.connector.connect(host='localhost',
+                                         database='baitap1',
+                                         user='root',
+                                         password='')
 
 # Mở trang web
 url = "https://organicmart.com.vn/rau-cu-qua-huu-co"
@@ -44,6 +52,18 @@ for product in products:
 # In ra kết quả
 for item in product_data:
     print(f"Tên: {item['name']}, Giá: {item['price']}")
+    
+    mySql_insert_query = """INSERT INTO weprausach ( name, price) 
+                            VALUES 
+                            (%s, %s) """
+
+    insert_tuple_ = (item['name'], item['price'])
+
+    cursor = connection.cursor()
+    cursor.execute(mySql_insert_query, insert_tuple_)
+
+    connection.commit()
+    print(cursor.rowcount, "Record inserted successfully into Laptop table")
 
 # Đóng trình duyệt
 driver.quit()
